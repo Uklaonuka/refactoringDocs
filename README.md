@@ -9,8 +9,8 @@
 находясь на выезде.
 
 Ссылки на репозитории:
-КЛИЕНТ:
-СЕРВЕР:
+КЛИЕНТ: https://github.com/Uklaonuka/refactoringClient
+СЕРВЕР: https://github.com/Uklaonuka/refactoringServer
 
 
 ## **Содержание**
