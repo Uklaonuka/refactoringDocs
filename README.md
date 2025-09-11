@@ -42,6 +42,9 @@
 
 <img width="944" height="471" alt="С4-1" src="https://github.com/user-attachments/assets/6f124b3f-8640-42ed-a760-9b537ecdde7e" />
 
+<img width="1189" height="1061" alt="С4-2" src="https://github.com/user-attachments/assets/8e7b0493-dbe8-4f65-a5d7-2cb7a5a0432d" />
+
+<img width="1442" height="929" alt="С4-3" src="https://github.com/user-attachments/assets/09969049-86e3-487a-94f5-90c3e5fd3600" />
 
 ### Схема данных
 
