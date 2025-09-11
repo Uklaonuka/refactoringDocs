@@ -40,7 +40,8 @@
 
 ### C4-модель
 
-Иллюстрация и описание архитектура ПС
+<img width="944" height="471" alt="С4-1" src="https://github.com/user-attachments/assets/6f124b3f-8640-42ed-a760-9b537ecdde7e" />
+
 
 ### Схема данных
 
