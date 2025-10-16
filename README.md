@@ -52,7 +52,199 @@
 
 ### Схема данных
 
-Описание отношений и структур данных, используемых в ПС. Также представить скрипт (программный код), который необходим для генерации БД
+Сущности, конфигурирующие в предметной области представлены ниже:
+User – сущность пользователя программного средства.
+Application – сущность заявки на оказание услуги и/или ремонта.
+Service – сущность услуги.
+Bill – сущность счета.
+Appeal – сущность обращения (сообщения) пользователя.
+Survey – сущность опроса пользователя.
+Post – сущность поста (объявления).
+Appointment – сущность приема (посещения) для записи пользователя на прием к сотруднику.
+Object – сущность жилого объекта, обслуживающегося предприятием.
+Document – сущность документа.
+Employee – сущность сотрудника.
+
+<img width="964" height="630" alt="image" src="https://github.com/user-attachments/assets/9cc30e2b-ab36-4748-b2c5-b2c420256825" />
+
+В физической модели данных созданы таблицы в соответствии с сущностями, в которые внесены соответствующие поля. Ранее существовавшие связи в логической модели были отображены на конкретных полях таблиц. Такие поля приобрели тип внешнего ключа.
+В таблице «Appointment», «Appeal», «Object», «Bill», «Application» поля user_id являются внешними ключами от поля id_user в таблице «User».
+В таблице «Bill» поле service_id является внешним ключом от поля id_service в таблице «Service».
+В таблице «Application» поле service_id является внешним ключом от поля id_service в таблице «Service», поле employee_id является внешним ключом от поля id_employee в таблице «Employee».
+База данных соответствует третьей нормальной форме (3НФ), так как каждая таблица имеет первичный ключ, все неключевые атрибуты зависят только от этого ключа и не зависят транзитивно друг от друга.
+Ниже приведен код генерации полученной базы данных.
+
+CREATE SCHEMA IF NOT EXISTS mydb DEFAULT CHARACTER SET utf8;
+USE mydb;
+CREATE TABLE IF NOT EXISTS mydb.User (
+  ID_user INT NOT NULL AUTO_INCREMENT,
+  Identify VARCHAR(14) NOT NULL,
+  First_name VARCHAR(255) NOT NULL,
+  Last_name VARCHAR(255) NOT NULL,
+  Surname VARCHAR(255) NOT NULL,
+  Birthday DATE NOT NULL,
+  Email VARCHAR(45) NOT NULL,
+  Adress VARCHAR(255) NOT NULL,
+  Contact VARCHAR(45) NOT NULL,
+  Login VARCHAR(255) NOT NULL,
+  Password VARCHAR(255) NOT NULL,
+  PRIMARY KEY (ID_user))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Appeal (
+  ID_appeal INT NOT NULL AUTO_INCREMENT,
+  Date DATE NOT NULL,
+  Text TEXT(900) NOT NULL,
+  User_ID INT NOT NULL,
+  Status TINYINT(1) NOT NULL,
+  PRIMARY KEY (ID_appeal),
+  INDEX user-appeal_idx (User_ID ASC) VISIBLE,
+  CONSTRAINT user-appeal
+    FOREIGN KEY (User_ID)
+    REFERENCES mydb.User (ID_user)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Post (
+  ID_post INT NOT NULL AUTO_INCREMENT,
+  Date DATE NOT NULL,
+  Title VARCHAR(255) NOT NULL,
+  Text TEXT(1500) NOT NULL,
+  Image VARCHAR(255) NOT NULL,
+  PRIMARY KEY (ID_post))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Appointment (
+  ID_appointment INT NOT NULL AUTO_INCREMENT,
+  DateTime DATETIME NOT NULL,
+  User_ID INT NOT NULL,
+  Employee_ID INT NOT NULL,
+  PRIMARY KEY (ID_appointment),
+  INDEX appointment-user_idx (User_ID ASC) VISIBLE,
+  CONSTRAINT appointment-user
+    FOREIGN KEY (User_ID)
+    REFERENCES mydb.User (ID_user)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Document (
+  ID_document INT NOT NULL AUTO_INCREMENT,
+  Date DATE NOT NULL,
+  Title VARCHAR(255) NOT NULL,
+  Discription VARCHAR(255) NOT NULL,
+  Link VARCHAR(255) NOT NULL,
+  PRIMARY KEY (ID_document))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Survey (
+  ID_survey INT NOT NULL AUTO_INCREMENT,
+  Date_close DATE NOT NULL,
+  Title VARCHAR(255) NOT NULL,
+  Text TEXT(800) NOT NULL,
+  Link VARCHAR(255) NOT NULL,
+  PRIMARY KEY (ID_survey))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Service (
+  ID_service INT NOT NULL AUTO_INCREMENT,
+  Title VARCHAR(255) NOT NULL,
+  Deadline INT NOT NULL,
+  Price DOUBLE NOT NULL,
+  Department VARCHAR(255) NOT NULL,
+  PRIMARY KEY (ID_service))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Employee (
+  ID_employee INT NOT NULL AUTO_INCREMENT,
+  First_name VARCHAR(255) NOT NULL,
+  Last_name VARCHAR(225) NOT NULL,
+  Surname VARCHAR(225) NOT NULL,
+  Birthday DATE NOT NULL,
+  Email VARCHAR(255) NOT NULL,
+  Adress VARCHAR(255) NOT NULL,
+  Contact VARCHAR(45) NOT NULL,
+  Department VARCHAR(255) NOT NULL,
+  Login VARCHAR(255) NOT NULL,
+  Password VARCHAR(255) NOT NULL,
+  PRIMARY KEY (ID_employee))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Bill (
+  ID_bill INT NOT NULL AUTO_INCREMENT,
+  User_ID INT NOT NULL,
+  Sevice_ID INT NOT NULL,
+  Price DOUBLE NOT NULL,
+  Status TINYINT(1) NOT NULL,
+  Date DATE NOT NULL,
+  Link VARCHAR(255) NOT NULL,
+  PRIMARY KEY (ID_bill),
+  INDEX Bill-user_idx (User_ID ASC) VISIBLE,
+  INDEX Bill-service_idx (Sevice_ID ASC) VISIBLE,
+  CONSTRAINT Bill-user
+    FOREIGN KEY (User_ID)
+    REFERENCES mydb.User (ID_user)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT Bill-service
+    FOREIGN KEY (Sevice_ID)
+    REFERENCES mydb.Service (ID_service)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Application (
+  ID_application INT NOT NULL AUTO_INCREMENT,
+  User_ID INT NOT NULL,
+  Employee_ID INT NOT NULL,
+  Service_ID INT NOT NULL,
+  Bill_ID INT NOT NULL,
+  Date DATE NOT NULL,
+  Status TINYINT(1) NOT NULL,
+  PRIMARY KEY (ID_application),
+  INDEX Application-user_idx (User_ID ASC) VISIBLE,
+  INDEX Application_idx (Service_ID ASC) VISIBLE,
+  INDEX Application-employee_idx (Employee_ID ASC) VISIBLE,
+  CONSTRAINT Application-user
+    FOREIGN KEY (User_ID)
+    REFERENCES mydb.User (ID_user)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT Application-service
+    FOREIGN KEY (Service_ID)
+    REFERENCES mydb.Service (ID_service)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT Application-employee
+    FOREIGN KEY (Employee_ID)
+    REFERENCES mydb.Employee (ID_employee)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS mydb.Object (
+  Adres VARCHAR(255) NOT NULL,
+  Floor INT NOT NULL,
+  Floors INT NOT NULL,
+  Rooms INT NOT NULL,
+  Common_area DOUBLE NOT NULL,
+  Living_area DOUBLE NOT NULL,
+  Occupancy INT NOT NULL,
+  Drainage TINYINT(1) NOT NULL,
+  Water_supply TINYINT(1) NOT NULL,
+  Gas_supply TINYINT(1) NOT NULL,
+  Garbage TINYINT(1) NOT NULL,
+  Water_heating TINYINT(1) NOT NULL,
+  User_ID INT NOT NULL,
+  PRIMARY KEY (Adres),
+  INDEX Object-user_idx (User_ID ASC) VISIBLE,
+  CONSTRAINT Object-user
+    FOREIGN KEY (User_ID)
+    REFERENCES mydb.User (ID_user)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
 
 ---
 
