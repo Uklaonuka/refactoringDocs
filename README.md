@@ -252,7 +252,8 @@ ENGINE = InnoDB;
 
 ### Диаграмма вариантов использования
 
-<img width="567" height="690" alt="image" src="https://github.com/user-attachments/assets/14ea5c4a-e65d-40e2-9f51-67b6d19c0bde" />
+<img width="1269" height="1075" alt="Варианты использования2" src="https://github.com/user-attachments/assets/42343945-1c0f-49f2-8ef7-9ef6fdd2845e" />
+
 
 ### User-flow диаграммы
 
@@ -382,11 +383,99 @@ ENGINE = InnoDB;
 
 ### Манифесты для сборки docker образов
 
-Представить весь код манифестов или ссылки на файлы с ними (при необходимости снабдить комментариями)
+Для развертывания программного средства используется Docker, см. рисунок.
+<img width="974" height="463" alt="image" src="https://github.com/user-attachments/assets/225ffbe2-8b8c-4870-9c2d-609e49e990f6" />
 
-### Манифесты для развертывания k8s кластера
+Для развертывания программного средства, написанного на Python, необходимо составить файл с набором используемых библиотек – «requirements.txt».
+Выполнить автоматическое составление файла «requirements.txt», можно в консоли используемой среды разработки при помощи команды:
+pip freeze > requirements.txt
 
-Представить весь код манифестов или ссылки на файлы с ними (при необходимости снабдить комментариями)
+Пример файла «requirements.txt» представлен на рисунке.
+<img width="974" height="572" alt="image" src="https://github.com/user-attachments/assets/df713376-1c96-49db-8005-9894ffbaaa92" />
+
+Далее для работы с технологией Docker потребуется файлы «Dockerfile» и «docker-compose.yml». 
+
+Dockerfile – это текстовый файл, в котором пошагово описано, как собрать Docker-образ приложения.
+Он нужен для:
+1	Определения окружения приложения: например, на основе какого базового образа строится система (Python, Node.js, Java, Ubuntu и т. д.).
+2	Установки зависимостей: например, Python-библиотеки (pip install), системные пакеты (apt-get).
+3	Копирования исходного кода проекта внутрь контейнера.
+4	Настройки переменных окружения, рабочих директорий, прав доступа.
+
+docker-compose.yml – это конфигурационный файл для инструмента Docker Compose, который позволяет запустить несколько взаимосвязанных контейнеров одной командой.
+Он нужен для:
+1	Описания сервисов, из которых состоит приложение: например, web-приложение + база данных + кеш.
+2	Масштабного управления контейнерами: можно запустить, остановить или пересобрать всё сразу.
+3	Настройки сетей и томов, переменных окружения, проброса портов.
+
+Пример файла «Dockerfile» представлен ниже:
+
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+COPY . .
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+Пример файла «docker-compose.yml» представлен ниже:
+
+version: '2.2'
+
+services:
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: 21_vek
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: 12345/21vek-api:latest
+    container_name: api_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+volumes:
+  db_data:
+
+В дальнейшем для развертывания программного средства необходимо собрать Docker образ. Это можно сделать при помощи команды:
+
+docker build -t my-python-app
+
+После успешной сборки образа, мы можем запустить наш контейнер, при помощи команды
+
+docker run my-python-app
+
+Для запуска данной команды необходимо чтобы Docker был установлен на используемом устройстве и был запущен. Docker в соответствии с конфигурационными файлами установит все необходимые образы[1] и запустит программное средство, см. рисунок.
+<img width="974" height="512" alt="image" src="https://github.com/user-attachments/assets/b85c9041-b26f-471c-b1ed-7c0e955f03ef" />
+
 
 ---
 
